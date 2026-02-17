@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pokémon Type Master - Emerald Edition</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        :root {
+            --bg-main: #f8fafc;
+            --accent: #6366f1;
+            --accent-light: #e0e7ff;
+            --accent-dark: #4f46e5;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-main);
+            color: #1e293b;
+        }
+
+        /* Base Badge Style */
+        .badge-base {
+            padding: 4px 10px;
+            color: white;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.65rem;
+            letter-spacing: 0.025em;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            min-width: 105px;
+            justify-content: center;
+            cursor: pointer;
+            user-select: none;
+            transition: all 0.2s ease;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
+
+        .type-badge-attack {
+            border-radius: 4px;
+            border-left: 3px solid rgba(255,255,255,0.4);
+        }
+
+        .type-badge-pokemon {
+            border-radius: 9999px;
+        }
+
+        .badge-base:hover {
+            filter: brightness(1.1);
+            transform: translateY(-1px);
+        }
+
+        /* Official Gen 3 Colors */
+        .bg-normal { background-color: #94947e; }
+        .bg-fuego { background-color: #e57331; }
+        .bg-agua { background-color: #4d79e1; }
+        .bg-planta { background-color: #67b845; }
+        .bg-electrico { background-color: #eec429; }
+        .bg-hielo { background-color: #84cfcf; }
+        .bg-lucha { background-color: #af2b24; }
+        .bg-veneno { background-color: #923a92; }
+        .bg-tierra { background-color: #cdb05f; }
+        .bg-volador { background-color: #9a84e1; }
+        .bg-psiquico { background-color: #e3507c; }
+        .bg-bicho { background-color: #99a71c; }
+        .bg-roca { background-color: #a89233; }
+        .bg-fantasma { background-color: #66508a; }
+        .bg-dragon { background-color: #6633e3; }
+        .bg-acero { background-color: #a7a7bd; }
+        .bg-siniestro { background-color: #665041; }
+
+        /* Cell Effectiveness Styles */
+        .eff-box {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            border-radius: 4px;
+        }
+        .eff-x2 { color: #ef4444; }
+        .eff-x4 { color: #991b1b; background-color: #fee2e2; }
+        .eff-x05 { color: #f59e0b; }
+        .eff-x025 { color: #92400e; background-color: #fef3c7; }
+        .eff-x0 { color: #ffffff; background-color: #1e293b; }
+        .eff-x1 { color: #94a3b8; font-weight: 400; }
+
+        /* Selection Highlighting */
+        .highlight-row { 
+            background-color: #f1f5f9 !important; 
+            border-top-color: #f1f5f9 !important;
+            border-bottom-color: #f1f5f9 !important;
+        }
+        .highlight-col { 
+            background-color: #f1f5f9 !important; 
+            border-left-color: #f1f5f9 !important;
+            border-right-color: #f1f5f9 !important;
+        }
+        
+        .highlight-intersect { 
+            background-color: var(--accent-light) !important; 
+            border-color: var(--accent-light) !important;
+            box-shadow: inset 0 0 0 1px var(--accent); 
+            z-index: 5;
+        }
+        
+        .selected-header { 
+            background-color: var(--accent) !important; 
+            color: white !important;
+            border-color: var(--accent) !important; 
+            box-shadow: none;
+            z-index: 25;
+        }
+
+        .selected-header .badge-base {
+            box-shadow: none;
+        }
+
+        .sticky-col {
+            position: sticky;
+            left: 0;
+            background: white;
+            z-index: 10;
+            border-right: 1px solid #e2e8f0;
+        }
+
+        .sticky-row {
+            position: sticky;
+            top: 0;
+            background: white;
+            z-index: 20;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .scroll-container {
+            overflow-x: auto;
+            border-radius: 12px;
+            background: white;
+            box-shadow: 0 4px 15px -3px rgba(0,0,0,0.05);
+        }
+
+        select {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2364748b'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 0.75rem center;
+            background-size: 1rem;
+        }
+
+        table {
+            border-spacing: 0;
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        th, td {
+            border: 1px solid #f1f5f9;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-12">
+
+    <div class="max-w-6xl mx-auto">
+        <!-- Cabecera Moderna -->
+        <header class="mb-12 text-center">
+            <h1 class="text-4xl font-light text-slate-800 tracking-tight">TYPE<span class="font-bold">MASTER</span> <span class="text-indigo-500 font-medium">EMERALD</span></h1>
+            <p class="text-slate-400 mt-2 text-sm uppercase tracking-widest font-medium">Análisis de Movimientos y Pokémon — Hoenn Dex</p>
+            <div class="mt-8 flex justify-center gap-4">
+                <button onclick="clearAllSelections()" class="text-[10px] font-bold tracking-widest uppercase border border-slate-200 text-slate-500 hover:text-white hover:bg-slate-800 hover:border-slate-800 px-8 py-3 rounded-full transition-all duration-300 shadow-sm">
+                    Limpiar selección de tabla
+                </button>
+            </div>
+        </header>
+
+        <!-- 1. TABLA MATRIZ (Primero) -->
+        <section class="mb-16">
+            <div class="flex items-center justify-between mb-4 px-2">
+                <h2 class="text-xs font-bold text-slate-400 uppercase tracking-widest">Matriz de Eficacias Interactiva</h2>
+                <p class="text-[10px] text-slate-400 italic">Haz clic para comparar hasta 2 atacantes y 2 defensores</p>
+            </div>
+            <div class="scroll-container">
+                <table id="type-table">
+                    <thead>
+                        <tr class="sticky-row">
+                            <th class="p-6 bg-slate-50 sticky-col z-30 text-slate-400 font-bold uppercase tracking-tighter text-left border-b-2">
+                                Ataque vs Pokémon
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody id="matrix-body" class="bg-white"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- 2. CALCULADORA (Segundo) -->
+        <section class="mb-8">
+            <div class="bg-white rounded-2xl p-8 border border-slate-100 shadow-sm">
+                <div class="flex items-center justify-between mb-8">
+                    <h2 class="text-xs font-bold text-slate-400 uppercase tracking-widest">Calculadora de Defensas de Pokémon</h2>
+                    <span class="text-[10px] bg-indigo-50 text-indigo-500 px-3 py-1 rounded-full font-bold uppercase">Herramienta de Equipo</span>
+                </div>
+                
+                <div class="grid sm:grid-cols-2 gap-8 mb-10">
+                    <div>
+                        <label class="text-[10px] font-bold text-slate-400 uppercase block mb-2 ml-1">Tipo 1 del Pokémon</label>
+                        <select id="type1" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none transition-all cursor-pointer hover:border-indigo-300"></select>
+                    </div>
+                    <div>
+                        <label class="text-[10px] font-bold text-slate-400 uppercase block mb-2 ml-1">Tipo 2 del Pokémon</label>
+                        <select id="type2" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none transition-all cursor-pointer hover:border-indigo-300">
+                            <option value="none">Ninguno (Tipo Puro)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div id="results" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">
+                    <!-- Resultados dinámicos -->
+                </div>
+            </div>
+        </section>
+
+        <!-- 3. EXPLICACIÓN (Todo el ancho) -->
+        <section class="mb-16">
+            <div class="bg-white rounded-2xl p-8 border border-indigo-100 shadow-sm">
+                <h3 class="text-xs font-bold text-indigo-500 uppercase tracking-widest mb-6 flex items-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+                    Cómo interpretar la Calculadora de Defensas
+                </h3>
+                
+                <div class="text-sm leading-relaxed text-slate-600">
+                    <p class="mb-6">Esta calculadora te muestra cómo reacciona un Pokémon ante los <b>ataques que recibe del enemigo</b>. No indica de qué tipo es tu ataque, sino qué tan vulnerable eres.</p>
+
+                    <div class="grid md:grid-cols-3 gap-6">
+                        <div class="bg-slate-50 p-6 rounded-xl border border-slate-100">
+                            <p class="font-bold text-slate-800 mb-4 flex items-center gap-2 uppercase text-[10px] tracking-wider">
+                                Paso 1: Selección
+                            </p>
+                            <p>Eliges el tipo de <b>TU</b> Pokémon (ej. Fuego). Estás configurando al defensor.</p>
+                        </div>
+                        <div class="bg-slate-50 p-6 rounded-xl border border-slate-100">
+                            <p class="font-bold text-slate-800 mb-4 flex items-center gap-2 uppercase text-[10px] tracking-wider">
+                                Paso 2: Análisis
+                            </p>
+                            <p>Las tarjetas que aparecen abajo representan los <b>tipos de movimientos enemigos</b>.</p>
+                        </div>
+                        <div class="bg-slate-50 p-6 rounded-xl border border-slate-100">
+                            <p class="font-bold text-slate-800 mb-4 flex items-center gap-2 uppercase text-[10px] tracking-wider">
+                                Paso 3: Daño
+                            </p>
+                            <p>Si aparece <b>Agua x2</b>, significa que los ataques de Agua le quitan el doble de vida a tu Pokémon de Fuego.</p>
+                        </div>
+                    </div>
+
+                    <div class="mt-8 p-6 bg-indigo-50/50 rounded-xl border border-indigo-100 flex flex-wrap gap-8 justify-around">
+                        <div class="flex items-center gap-4">
+                            <div class="text-red-600 font-bold text-xl">x4 / x2</div>
+                            <div class="text-xs uppercase font-bold text-slate-400">Debilidades<br><span class="font-normal normal-case text-slate-500">Recibes más daño</span></div>
+                        </div>
+                        <div class="flex items-center gap-4">
+                            <div class="text-slate-800 font-bold text-xl">x1</div>
+                            <div class="text-xs uppercase font-bold text-slate-400">Neutral<br><span class="font-normal normal-case text-slate-500">No aparece tarjeta</span></div>
+                        </div>
+                        <div class="flex items-center gap-4">
+                            <div class="text-emerald-600 font-bold text-xl">½ / ¼</div>
+                            <div class="text-xs uppercase font-bold text-slate-400">Resistencias<br><span class="font-normal normal-case text-slate-500">Recibes menos daño</span></div>
+                        </div>
+                        <div class="flex items-center gap-4">
+                            <div class="text-slate-900 font-bold text-xl">0</div>
+                            <div class="text-xs uppercase font-bold text-slate-400">Inmunidad<br><span class="font-normal normal-case text-slate-500">Daño nulo</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 4. LEYENDAS (Al final) -->
+        <section class="grid md:grid-cols-2 gap-8 mb-16">
+            <!-- Roles -->
+            <div class="bg-white rounded-2xl p-8 border border-slate-100 shadow-sm">
+                <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-6">Simbología de Roles</h3>
+                <div class="space-y-6">
+                    <div class="flex items-center gap-4">
+                        <div class="w-10 h-10 rounded bg-slate-800 flex items-center justify-center text-white shrink-0">
+                            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                        </div>
+                        <div>
+                            <p class="text-sm font-bold text-slate-700 uppercase tracking-tight">Atacante (Movimiento)</p>
+                            <p class="text-[11px] text-slate-400">Representa el tipo del ataque que se está ejecutando. Forma rectangular.</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <div class="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center text-white shrink-0">
+                            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg>
+                        </div>
+                        <div>
+                            <p class="text-sm font-bold text-slate-700 uppercase tracking-tight">Defensor (Pokémon)</p>
+                            <p class="text-[11px] text-slate-400">Representa el tipo del Pokémon que recibe el impacto. Forma circular.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Categorías -->
+            <div class="bg-white rounded-2xl p-8 border border-slate-100 shadow-sm">
+                <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-6">Categorías de Daño (Gen 3)</h3>
+                <div class="space-y-6">
+                    <div class="flex items-center gap-4">
+                        <div class="w-10 h-10 rounded-lg bg-orange-50 flex items-center justify-center text-orange-500 shrink-0">
+                            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L2 12l10 10 10-10L12 2z"/></svg>
+                        </div>
+                        <div>
+                            <p class="text-sm font-bold text-slate-700 uppercase tracking-tight">Icono Rombo: Físico</p>
+                            <p class="text-[11px] text-slate-400">Daño basado en el Ataque y la Defensa física.</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <div class="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center text-blue-500 shrink-0">
+                            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4" fill="white" fill-opacity="0.3"/></svg>
+                        </div>
+                        <div>
+                            <p class="text-sm font-bold text-slate-700 uppercase tracking-tight">Icono Círculo: Especial</p>
+                            <p class="text-[11px] text-slate-400">Daño basado en el Atq. Esp. y la Def. Esp.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <footer class="mt-16 pb-12 text-center border-t border-slate-100 pt-8">
+            <p class="text-slate-300 text-[10px] font-bold uppercase tracking-[0.3em]">Pokémon Emerald Reference Utility</p>
+        </footer>
+    </div>
+
+    <script>
+        const typeData = [
+            { name: "Normal", cat: "F" }, { name: "Fuego", cat: "E" }, { name: "Agua", cat: "E" },
+            { name: "Planta", cat: "E" }, { name: "Electrico", cat: "E" }, { name: "Hielo", cat: "E" },
+            { name: "Lucha", cat: "F" }, { name: "Veneno", cat: "F" }, { name: "Tierra", cat: "F" },
+            { name: "Volador", cat: "F" }, { name: "Psiquico", cat: "E" }, { name: "Bicho", cat: "F" },
+            { name: "Roca", cat: "F" }, { name: "Fantasma", cat: "F" }, { name: "Dragon", cat: "E" },
+            { name: "Acero", cat: "F" }, { name: "Siniestro", cat: "E" }
+        ];
+
+        const chart = {
+            "Normal":    { "Roca": 0.5, "Fantasma": 0, "Acero": 0.5 },
+            "Fuego":     { "Fuego": 0.5, "Agua": 0.5, "Planta": 2, "Hielo": 2, "Bicho": 2, "Roca": 0.5, "Dragon": 0.5, "Acero": 2 },
+            "Agua":      { "Fuego": 2, "Agua": 0.5, "Planta": 0.5, "Tierra": 2, "Roca": 2, "Dragon": 0.5 },
+            "Planta":    { "Fuego": 0.5, "Agua": 2, "Planta": 0.5, "Veneno": 0.5, "Tierra": 2, "Volador": 0.5, "Bicho": 0.5, "Roca": 2, "Dragon": 0.5, "Acero": 0.5 },
+            "Electrico": { "Agua": 2, "Planta": 0.5, "Electrico": 0.5, "Tierra": 0, "Volador": 2, "Dragon": 0.5 },
+            "Hielo":     { "Fuego": 0.5, "Agua": 0.5, "Planta": 2, "Hielo": 0.5, "Tierra": 2, "Volador": 2, "Dragon": 2, "Acero": 0.5 },
+            "Lucha":     { "Normal": 2, "Hielo": 2, "Veneno": 0.5, "Volador": 0.5, "Psiquico": 0.5, "Bicho": 0.5, "Roca": 2, "Fantasma": 0, "Acero": 2, "Siniestro": 2 },
+            "Veneno":    { "Planta": 2, "Veneno": 0.5, "Tierra": 0.5, "Roca": 0.5, "Fantasma": 0.5, "Acero": 0 },
+            "Tierra":    { "Fuego": 2, "Planta": 0.5, "Electrico": 2, "Veneno": 2, "Volador": 0, "Bicho": 0.5, "Roca": 2, "Acero": 2 },
+            "Volador":   { "Planta": 2, "Electrico": 0.5, "Lucha": 2, "Bicho": 2, "Roca": 0.5, "Acero": 0.5 },
+            "Psiquico":  { "Lucha": 2, "Veneno": 2, "Psiquico": 0.5, "Acero": 0.5, "Siniestro": 0 },
+            "Bicho":     { "Fuego": 0.5, "Planta": 2, "Lucha": 0.5, "Veneno": 0.5, "Volador": 0.5, "Psiquico": 2, "Fantasma": 0.5, "Acero": 0.5, "Siniestro": 2 },
+            "Roca":      { "Fuego": 2, "Hielo": 2, "Lucha": 0.5, "Tierra": 0.5, "Volador": 2, "Bicho": 2, "Acero": 0.5 },
+            "Fantasma":  { "Normal": 0, "Psiquico": 2, "Fantasma": 2, "Acero": 0.5, "Siniestro": 0.5 },
+            "Dragon":    { "Dragon": 2, "Acero": 0.5 },
+            "Acero":     { "Fuego": 0.5, "Agua": 0.5, "Electrico": 0.5, "Hielo": 2, "Roca": 2, "Acero": 0.5 },
+            "Siniestro": { "Lucha": 0.5, "Psiquico": 2, "Fantasma": 2, "Acero": 0.5, "Siniestro": 0.5 }
+        };
+
+        let activeRows = [];
+        let activeCols = [];
+
+        function toggleRow(idx) {
+            const index = activeRows.indexOf(idx);
+            if (index > -1) activeRows.splice(index, 1);
+            else {
+                if (activeRows.length >= 2) activeRows.shift();
+                activeRows.push(idx);
+            }
+            renderHighlights();
+        }
+
+        function toggleCol(idx) {
+            const index = activeCols.indexOf(idx);
+            if (index > -1) activeCols.splice(index, 1);
+            else {
+                if (activeCols.length >= 2) activeCols.shift();
+                activeCols.push(idx);
+            }
+            renderHighlights();
+        }
+
+        function clearAllSelections() {
+            activeRows = [];
+            activeCols = [];
+            renderHighlights();
+        }
+
+        function renderHighlights() {
+            const table = document.getElementById('type-table');
+            const rows = table.querySelectorAll('tbody tr');
+            const headerCells = table.querySelectorAll('thead th');
+
+            table.querySelectorAll('.highlight-row, .highlight-col, .highlight-intersect, .selected-header').forEach(el => {
+                el.classList.remove('highlight-row', 'highlight-col', 'highlight-intersect', 'selected-header');
+            });
+
+            activeRows.forEach(rowIdx => {
+                const tr = rows[rowIdx];
+                tr.querySelector('.sticky-col').classList.add('selected-header');
+                tr.querySelectorAll('td').forEach(td => td.classList.add('highlight-row'));
+            });
+
+            activeCols.forEach(colIdx => {
+                headerCells[colIdx + 1].classList.add('selected-header');
+                rows.forEach(tr => tr.cells[colIdx + 1].classList.add('highlight-col'));
+            });
+
+            activeRows.forEach(rowIdx => {
+                activeCols.forEach(colIdx => {
+                    rows[rowIdx].cells[colIdx + 1].classList.add('highlight-intersect');
+                });
+            });
+        }
+
+        function getTypeBadgeHtml(typeObj, mode = 'attack') {
+            const isAttack = mode === 'attack';
+            const roleSvg = isAttack ? 
+                `<svg class="w-2.5 h-2.5" viewBox="0 0 24 24" fill="currentColor"><path d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>` : 
+                `<svg class="w-2.5 h-2.5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg>`;
+            
+            let catSvg = '';
+            if(isAttack) {
+                catSvg = typeObj.cat === 'F' ? 
+                    `<svg class="w-2 h-2 ml-1" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L2 12l10 10 10-10L12 2z"/></svg>` : 
+                    `<svg class="w-2 h-2 ml-1" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10"/></svg>`;
+            }
+
+            const shapeClass = isAttack ? 'type-badge-attack' : 'type-badge-pokemon';
+            
+            return `<span class="badge-base ${shapeClass} bg-${typeObj.name.toLowerCase()}">
+                ${roleSvg}
+                <span>${typeObj.name}</span>
+                ${catSvg}
+            </span>`;
+        }
+
+        function init() {
+            const matrixBody = document.getElementById('matrix-body');
+            const headerRow = document.querySelector('thead tr');
+            const select1 = document.getElementById('type1');
+            const select2 = document.getElementById('type2');
+
+            // Pokémon Defensores
+            typeData.forEach((typeObj, colIdx) => {
+                const th = document.createElement('th');
+                th.className = "p-4 min-w-[125px] transition-all cursor-pointer hover:bg-slate-50";
+                th.innerHTML = getTypeBadgeHtml(typeObj, 'pokemon');
+                th.onclick = () => toggleCol(colIdx);
+                headerRow.appendChild(th);
+                select1.add(new Option(typeObj.name, typeObj.name));
+                select2.add(new Option(typeObj.name, typeObj.name));
+            });
+
+            // Atacantes
+            typeData.forEach((atkType, rowIdx) => {
+                const tr = document.createElement('tr');
+                const label = document.createElement('td');
+                label.className = "p-4 sticky-col text-left transition-all cursor-pointer";
+                label.innerHTML = getTypeBadgeHtml(atkType, 'attack');
+                label.onclick = () => toggleRow(rowIdx);
+                tr.appendChild(label);
+
+                typeData.forEach((defType, colIdx) => {
+                    const cell = document.createElement('td');
+                    const eff = (chart[atkType.name] && chart[atkType.name][defType.name] !== undefined) ? chart[atkType.name][defType.name] : 1;
+                    cell.className = "p-4 transition-all";
+                    
+                    let content = '';
+                    if (eff === 2) content = `<span class="eff-x2">x2</span>`;
+                    else if (eff === 0.5) content = `<span class="eff-x05">½</span>`;
+                    else if (eff === 0) content = `<div class="eff-box eff-x0">0</div>`;
+                    else content = `<span class="eff-x1">1</span>`;
+                    
+                    cell.innerHTML = content;
+                    cell.onclick = (e) => {
+                        e.stopPropagation();
+                        toggleRow(rowIdx);
+                        toggleCol(colIdx);
+                    };
+                    tr.appendChild(cell);
+                });
+                matrixBody.appendChild(tr);
+            });
+
+            select1.addEventListener('change', updateCalculator);
+            select2.addEventListener('change', updateCalculator);
+            updateCalculator();
+        }
+
+        function updateCalculator() {
+            const t1 = document.getElementById('type1').value;
+            const t2 = document.getElementById('type2').value;
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '';
+
+            const effectivenessList = [];
+            typeData.forEach(atkType => {
+                const eff1 = (chart[atkType.name] && chart[atkType.name][t1] !== undefined) ? chart[atkType.name][t1] : 1;
+                const eff2 = t2 === 'none' ? 1 : ((chart[atkType.name] && chart[atkType.name][t2] !== undefined) ? chart[atkType.name][t2] : 1);
+                const total = eff1 * eff2;
+                if (total !== 1) effectivenessList.push({ type: atkType, value: total });
+            });
+
+            effectivenessList.sort((a, b) => b.value - a.value);
+
+            effectivenessList.forEach(item => {
+                const div = document.createElement('div');
+                div.className = "p-4 rounded-xl flex flex-col items-center justify-center border border-slate-100 transition-all";
+                let valLabel = `x${item.value}`;
+                let style = "bg-white text-slate-400";
+
+                if (item.value >= 4) style = "bg-red-50 border-red-100 text-red-700 font-bold";
+                else if (item.value >= 2) style = "bg-orange-50 border-orange-100 text-orange-600 font-bold";
+                else if (item.value === 0.5) { style = "bg-amber-50 border-amber-100 text-amber-700"; valLabel = "½"; }
+                else if (item.value === 0.25) { style = "bg-emerald-50 border-emerald-100 text-emerald-700 font-bold"; valLabel = "¼"; }
+                else if (item.value === 0) { style = "bg-slate-800 border-slate-900 text-white font-bold"; valLabel = "0"; }
+
+                div.className += ` ${style}`;
+                div.innerHTML = `<div class="scale-90 mb-2">${getTypeBadgeHtml(item.type, 'attack')}</div><span class="text-sm font-bold">${valLabel}</span>`;
+                resultsDiv.appendChild(div);
+            });
+
+            if (effectivenessList.length === 0) {
+                resultsDiv.innerHTML = '<p class="col-span-full text-center text-slate-300 py-4 italic text-xs">Sin debilidades ni resistencias especiales (Daño Neutral).</p>';
+            }
+        }
+
+        window.onload = init;
+    </script>
+</body>
+</html>
