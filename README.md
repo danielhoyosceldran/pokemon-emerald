@@ -2,9 +2,7 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/Version-1.0.0-62B957?style=for-the-badge" alt="Version" />
-  <img src="https://img.shields.io/badge/License-MIT-blue.svg?style=for-the-badge" alt="License: MIT" />
   <img src="https://img.shields.io/badge/Gen-III-yellow?style=for-the-badge" alt="Generation 3" />
-  <img src="https://img.shields.io/badge/Contributors-27%2B-green.svg?style=for-the-badge" alt="Contributors" />
 </p>
 
 <p align="center">
@@ -81,19 +79,3 @@ La aplicación es un documento **Standalone** (autónomo) que no requiere servid
 1. **Descarga** el archivo pokemon_type_chart.html.
 2. **Abre** el archivo en cualquier navegador moderno (Chrome, Firefox, Safari, Edge).
 3. **Uso Offline:** Una vez descargado, no requiere conexión a internet.
-
-## **☕ Soporte y Contribuciones**
-
-Si este proyecto te ha sido útil, considera apoyar su desarrollo:
-
-<a href="https://buymeacoffee.com/argenistherose">
-
-<img src="https://img.shields.io/badge/Buy%20Me%20a%20Coffee-Donate-yellow.svg?style=for-the-badge&logo=buy-me-a-coffee" alt="Buy Me a Coffee" />
-
-</a>
-
-<p align="center">
-
-<sub>Basado en los datos técnicos oficiales de la Generación 3 de Pokémon.</sub>
-
-</p>
